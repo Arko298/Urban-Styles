@@ -1,7 +1,11 @@
 import React, { useContext, useState } from 'react';
 import { assets } from '../assets/assets';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { ShopContext } from '../context/ShopContext';
+import { useLogoutMutation } from '../redux/api/userApiSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../redux/features/auth/authSlice';
+import { toast } from 'react-toastify';
 
 const Navbar = () => {
   // State to manage the visibility of the sidebar menu
@@ -9,6 +13,25 @@ const Navbar = () => {
   
   // Accessing context values for controlling search visibility and getting cart count
   const { setShowSearch, getCartCount } = useContext(ShopContext);
+
+  const [logoutApiCall]=useLogoutMutation();
+  const dispatch=useDispatch();
+  const navigate=useNavigate();
+  const {userInfo}= useSelector((state)=>state.auth);
+  const isMainAdmin=userInfo?.isAdmin === true;
+
+  // Function to handle logout
+  const logoutHandler = async () => {
+   try {
+     await logoutApiCall().unwrap();
+     localStorage.removeItem('token');
+     dispatch(logout());
+     navigate('/login');
+     toast.success("Logged out Successfully");
+   } catch (error) {
+    console.error(error);
+   }
+  }
 
   return (
     <div className='flex items-center justify-between py-5 font-medium'>
@@ -49,10 +72,20 @@ const Navbar = () => {
           </Link>
           <div className='group-hover:block hidden absolute dropdown-menu right-0 pt-4'>
             <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded'>
-              <p className='cursor-pointer hover:text-black'>My Profile</p>
-              <p className='cursor-pointer hover:text-black'>Orders</p>
-              <p className='cursor-pointer hover:text-black'>Logout</p>
+              <Link to="/profile" className='cursor-pointer hover:text-black'>My Profile</Link>
+              <Link to="/orders" className='cursor-pointer hover:text-black'>Orders</Link>
+              <Link 
+              onClick={logoutHandler}
+              className='cursor-pointer hover:text-black'>Logout</Link>
             </div>
+            {isMainAdmin && (
+              <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded'>
+                <Link to="/admin/userlist" className='cursor-pointer hover:text-black'>Users</Link>
+                <Link to="/admin/productList" className='cursor-pointer hover:text-black'>Products</Link>
+                <Link to="/admin/categoryList" className='cursor-pointer hover:text-black'>Categories</Link>
+                <Link to="/admin/typesList" className='cursor-pointer hover:text-black'>Types</Link>
+              </div>
+            )}
           </div>
         </div>
         

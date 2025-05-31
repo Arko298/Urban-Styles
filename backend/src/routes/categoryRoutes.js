@@ -2,11 +2,14 @@ import Router from "express";
 import {
   authenticateToken,
   authorizeAdmin,
-} from "../middlewares/authMiddlewares";
+} from "../middlewares/authMiddlewares.js";
 import {
   createCategory,
   readCategory,
-} from "../controllers/categoryControllers";
+  removeCategory,
+  updateCategory,
+  listCategory
+} from "../controllers/categoryControllers.js";
 
 const router = Router();
 

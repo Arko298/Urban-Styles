@@ -1,11 +1,12 @@
 import jwt from "jsonwebtoken";
-import User from "../models/userModels";
-import asyncHandler from "./asyncHandler";
+import User from "../models/userModels.js";
+import asyncHandler from "./asyncHandler.js";
 
 
 
 const authenticateToken=asyncHandler(async(req,res,next)=>{
-    let token= req.cookies.jwt;
+    let token;
+    token = req.cookies.jwt;
 
     if (token){
         try {
@@ -18,7 +19,7 @@ const authenticateToken=asyncHandler(async(req,res,next)=>{
         }
     }else{
         res.status(401);
-        throw new Error("Not Authorized, Token failed");
+        throw new Error("Not Authorized, Token not found ");
     }
 });
 
@@ -30,4 +31,4 @@ const authorizeAdmin= (req,res,next)=>{
     }
 };
 
-export default {authenticateToken,authorizeAdmin}
+export  {authenticateToken,authorizeAdmin}

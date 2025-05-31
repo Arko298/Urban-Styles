@@ -1,9 +1,10 @@
-import asyncHandler from "../middlewares/asyncHandler";
-import Product from "../models/productModel";
+import asyncHandler from "../middlewares/asyncHandler.js";
+import Product from "../models/productModel.js";
 
 const addProducts = asyncHandler(async (req, res) => {
   try {
-    const { name, description, price, category, quantity, brand } = req.field;
+    const { name, description, price, category, types } = req.fields;
+    console.log(req.fields);
     switch (true) {
       case !name:
         return res.status(400).json("Please provide product name");
@@ -13,22 +14,20 @@ const addProducts = asyncHandler(async (req, res) => {
         return res.status(400).json("Please provide product price");
       case !category:
         return res.status(400).json("Please provide product category");
-      case !quantity:
-        return res.status(400).json("Please provide product quantity");
-      case !brand:
-        return res.status(400).json("Please provide product brand");
+      // case !stock:
+      //   return res.status(400).json("Please provide product stock");
+      case !types:
+        return res.status(400).json("Please provide product types");
     }
 
     const existingProduct = await Product.findOne({ name });
     if (existingProduct) {
       return res.status(400).json("Product already exists");
     }
-    const product = new Product({ ...req.field });
-    const productSaved = await product.save();
-    if (!productSaved) {
-      return res.status(400).json("Failed to save product");
-    }
-    res.status(201).json(productSaved);
+    const product = new Product({ ...req.fields });
+    await product.save();
+    
+    res.status(201).json(product);
   } catch (error) {
     console.log(error);
     return res.status(400).json(error);
@@ -37,7 +36,7 @@ const addProducts = asyncHandler(async (req, res) => {
 
 const updateProduct = asyncHandler(async (req, res) => {
   try {
-    const { name, description, price, category, quantity, brand } = req.field;
+    const { name, description, price, category, quantity, types } = req.field;
     switch (true) {
       case !name:
         return res.status(400).json("Please provide product name");
@@ -49,8 +48,8 @@ const updateProduct = asyncHandler(async (req, res) => {
         return res.status(400).json("Please provide product category");
       case !quantity:
         return res.status(400).json("Please provide product quantity");
-      case !brand:
-        return res.status(400).json("Please provide product brand");
+      case !types:
+        return res.status(400).json("Please provide product types");
     }
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -61,7 +60,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     if (price) product.price = price;
     if (category) product.category = category;
     if (quantity) product.quantity = quantity;
-    if (brand) product.brand = brand;
+    if (types) product.types = types;
     const updatedProduct = await product.save();
     if (!updatedProduct) {
       return res.status(400).json("Failed to update product");
@@ -218,7 +217,7 @@ const filterProducts = asyncHandler(async (req, res) => {
   }
 });
 
-export default {
+export  {
   addProducts,
   updateProduct,
   removeProduct,

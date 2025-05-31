@@ -7,4 +7,20 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
+  server:{
+    proxy:{
+      "/api/":{
+        target:'http://localhost:5000',
+        // changeOrigin:true,
+        // secure:false,
+        // rewrite:(path)=>path.replace(/^\/api/,'')
+      },
+      "/uploads/":{
+        target:'http://localhost:5000',
+        // changeOrigin:true,
+        // secure:false,
+        // rewrite:(path)=>path.replace(/^\/uploads/,'')
+      }
+    }
+  }
 });

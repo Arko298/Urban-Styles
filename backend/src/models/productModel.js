@@ -1,4 +1,4 @@
-import { raw } from 'body-parser';
+
 import mongoose, { Schema } from 'mongoose';
 
 const reviewSchema= new Schema({
@@ -20,13 +20,17 @@ const productSchema = new Schema({
         ref:'Category',
         required:true
     },
+    types: {type:mongoose.Schema.Types.ObjectId,
+        ref: 'Types',
+        required: true},
     reviews: [reviewSchema],
-    numReview:{type:Number,required:true},
-    avgRating:{type:Number,required:true},
-    stock: {type:Number,required:true},
-    image: {type:String,required:true},
-    stockCount: {type:Number,required:true},
-    soldCount:{type:Number,required:true},
+    numReview:{type:Number,default:0},
+    avgRating:{type:Number},
+    size: [{type: String}],
+    image: {type:String},
+    stockCount: {type:Number},
+    soldCount:{type:Number},
+    bestseller: {type: Boolean, default: false}
     
 },
 {timestamp:true});

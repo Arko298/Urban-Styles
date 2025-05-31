@@ -15,6 +15,14 @@ import Footer from './components/Footer'
 import SearchBar from './components/SearchBar'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import UserList from './pages/Admin/UserList.jsx'
+import Profile from './pages/Profile'
+import ProductList from './pages/Admin/ProductList'
+import AdminRoute from './pages/Admin/AdminRoutes'
+import CategoryList from './pages/Admin/CategoryList.jsx'
+import TypesList from './pages/Admin/TypesList.jsx'
+import Shipping from './pages/Shipping.jsx'
+import PrivateRoute from './components/PrivateRoute.jsx'
 
 const App = () => {
   return (
@@ -29,35 +37,35 @@ const App = () => {
       <SearchBar />
       
       {/* Define routes for the application */}
-      <Routes>
-        {/* Home page route */}
-        <Route path='/' element={<Home />} />
-        
-        {/* Collection page route */}
-        <Route path='/collection' element={<Collection />} />
-        
-        {/* About page route */}
-        <Route path='/about' element={<About />} />
-        
-        {/* Contact page route */}
-        <Route path='/contact' element={<Contact />} />
-        
-        {/* Dynamic product page route based on productId */}
-        <Route path='/product/:productId' element={<Product />} />
-        
-        {/* Cart page route */}
-        <Route path='/cart' element={<Cart />} />
-        
-        {/* Login page route */}
+       <Routes>
         <Route path='/login' element={<Login />} />
-        
-        {/* Place order page route */}
+        <Route index={true} path='/' element={<Home />} />
+        <Route path='/collection' element={<Collection />} />
+        <Route path='/about' element={<About />} />
+        <Route path='/contact' element={<Contact />} />
+        <Route path='/product/:productId' element={<Product />} />       
+        <Route path='/cart' element={<Cart />} />    
+
+
+        {/** For registered Users */}
+        <Route path="" element={<PrivateRoute/>}>
+        <Route path='/profile' element={<Profile />} />    
         <Route path='/place-order' element={<PlaceOrder />} />
-        
-        {/* Orders page route to view past orders */}
-        <Route path='/orders' element={<Orders />} />
-      </Routes>
+        <Route path="/shipping" element={<Shipping/>}/>  
+        <Route path='/orders/:id' element={<Orders />} />
+        </Route>
       
+        
+      
+        {/**For the admin */}
+        <Route path='/admin' element={<AdminRoute />}>
+        <Route path="userlist" element={<UserList/>} />
+        <Route path="/admin/productList" element={<ProductList/>} />
+        <Route path="/admin/categoryList" element={<CategoryList/>} />
+        <Route path="/admin/typesList" element={<TypesList/>} />
+
+      </Route>
+      </Routes>
       {/* Footer component for the application */}
       <Footer />
     </div>

@@ -37,7 +37,7 @@ router.route("/new").get(fetchNewProducts);
 router.get("/top-products", fetchTopProducts);
 router.route('/all-products').get(fetchAllProducts);
 
-router.route("/filtered-products").post(filterProducts);
+router.route("/filter").post(filterProducts);
 
 
 export default router;
