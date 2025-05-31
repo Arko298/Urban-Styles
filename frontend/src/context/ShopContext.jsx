@@ -2,7 +2,7 @@ import { createContext, useEffect, useState } from 'react';
 import { products } from '../assets/assets'; 
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-
+import {useSelector} from "react-redux"
 // Creating a context for the shop
 export const ShopContext = createContext();
 
@@ -93,6 +93,7 @@ const ShopContextProvider = (props) => {
 
   // Context value to provide
   const value = {
+    // userInfo: useSelector((state) => state.userInfo), // Get user info from Redux store
     products,
     currency,
     delivery_fee,

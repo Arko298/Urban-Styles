@@ -13,7 +13,7 @@ import {
   getUserOrders,
   markOrderAsDelivered,
   markOrderAsPaid,
-} from "../controllers/orderControllers";
+} from "../controllers/orderControllers.js";
 
 const router = Router();
 

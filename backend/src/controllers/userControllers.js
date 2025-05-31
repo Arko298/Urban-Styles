@@ -7,9 +7,9 @@ import createToken from "../utils/createToken.js";
 const createUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
 
-  if (!username || !email || !password) {
-    throw new Error("Please fill all the inputs.");
-  }
+  // if (!username || !email || !password) {
+  //   throw new Error("Please fill all the inputs.");
+  // }
 
   const userExists = await User.findOne({ email });
   if (userExists) return res.status(400).send("User already exists");
@@ -46,9 +46,10 @@ const loginUser = asyncHandler(async (req, res) => {
       password,
       existingUser.password
     );
-
+    
     if (isPasswordValid) {
       createToken(res, existingUser._id);
+    
 
       res.status(201).json({
         _id: existingUser._id,
@@ -62,8 +63,8 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutCurrentUser = asyncHandler(async (req, res) => {
-  res.cookie("token", " ", {
-    httyOnly: true,
+  res.cookie("jwt", " ", {
+    httpOnly: true,
     expires: new Date(0),
   });
 

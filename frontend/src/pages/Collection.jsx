@@ -1,83 +1,51 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { ShopContext } from '../context/ShopContext'; 
+import React, { useContext, useEffect } from 'react';
+import { ShopContext } from '../context/ShopContext';
 import { assets } from '../assets/assets';
-import Title from '../components/Title'; 
-import ProductItem from '../components/ProductItem'; 
+import Title from '../components/Title';
+import ProductItem from '../components/ProductItem';
+import { useDispatch, useSelector } from 'react-redux';
+import { setProducts, toggleCategory, toggleSubCategory, setSortType, applyFilters, setSearch } from '../redux/features/collection/collectionSlice';
+import { useFetchCategoriesQuery } from '../redux/api/categoryApiSlice';
+import { useFetchTypesQuery } from '../redux/api/typesApiSlice';
+import { useAllProductsQuery } from '../redux/api/productApiSlice';
+import { useState } from 'react';
 
 const Collection = () => {
-  const { products, search, showSearch } = useContext(ShopContext); 
-  const [showFilter, setShowFilter] = useState(false); 
-  const [filterProducts, setFilterProducts] = useState([]);
-  const [category, setCategory] = useState([]); 
-  const [subCategory, setSubCategory] = useState([]); 
-  const [sortType, setSortType] = useState('relevant'); 
+  const { search, showSearch } = useContext(ShopContext);
+  const dispatch = useDispatch();
+  const { filteredProducts, categories, subCategories, sortType } = useSelector((state) => state.collection);
+  const [showFilter, setShowFilter] = useState(false);
 
-  // Toggle selected category
-  const toggleCategory = (e) => {
-    if (category.includes(e.target.value)) {
-      setCategory(prev => prev.filter(item => item !== e.target.value)); // Remove category if already selected
-    } else {
-      setCategory(prev => [...prev, e.target.value]); // Add category if not selected
-    }
-  };
+  // Fetch categories, types, and products using RTK Query
+  const { data: backendCategories = [], isLoading: categoriesLoading, error: categoriesError } = useFetchCategoriesQuery();
+  const { data: backendTypes = [], isLoading: typesLoading, error: typesError } = useFetchTypesQuery();
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useAllProductsQuery();
 
-  // Toggle selected subcategory
-  const toggleSubCategory = (e) => {
-    if (subCategory.includes(e.target.value)) {
-      setSubCategory(prev => prev.filter(item => item !== e.target.value)); // Remove subcategory if already selected
-    } else {
-      setSubCategory(prev => [...prev, e.target.value]); // Add subcategory if not selected
-    }
-  };
-
-  // Apply filters based on selected categories and subcategories
-  const applyFilter = () => {
-    let productsCopy = products.slice(); // Create a copy of the original product list
-    
-    // Filter products based on search input
-    if (showSearch && search) {
-      productsCopy = productsCopy.filter(item => item.name.toLowerCase().includes(search.toLowerCase()));
-    }
-    
-    // Filter by category if any categories are selected
-    if (category.length > 0) {
-      productsCopy = productsCopy.filter(item => category.includes(item.category));
-    }
-    
-    // Filter by subcategory if any subcategories are selected
-    if (subCategory.length > 0) {
-      productsCopy = productsCopy.filter(item => subCategory.includes(item.subCategory));
-    }
-    
-    setFilterProducts(productsCopy); // Update the filtered products state
-  };
-
-  // Sort products based on selected sorting type
-  const sortProduct = () => {
-    let fpCopy = filterProducts.slice(); // Create a copy of the filtered products
-
-    switch (sortType) {
-      case 'low-high':
-        setFilterProducts(fpCopy.sort((a, b) => a.price - b.price)); // Sort from low to high price
-        break;
-      case 'high-low':
-        setFilterProducts(fpCopy.sort((a, b) => b.price - a.price)); // Sort from high to low price
-        break;
-      default:
-        applyFilter(); // Re-apply filters if no sorting is selected
-        break; 
-    }
-  };
-
-  // Re-apply filters when categories, subcategories, search, or search visibility changes
+  // Set products in Redux store when fetched
   useEffect(() => {
-    applyFilter();
-  }, [category, subCategory, search, showSearch]);
+    if (products.length > 0) {
+      dispatch(setProducts(products));
+    }
+  }, [products, dispatch]);
 
-  // Re-sort products when sort type changes
+  // Update search term in Redux store
   useEffect(() => {
-    sortProduct();
-  }, [sortType]);
+    dispatch(setSearch(search));
+  }, [search, dispatch]);
+
+  // Apply filters when categories, subcategories, sort type, or search changes
+  useEffect(() => {
+    dispatch(applyFilters());
+  }, [categories, subCategories, sortType, search, showSearch, dispatch]);
+
+  // Handle loading and error states
+  if (categoriesLoading || typesLoading || productsLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (categoriesError || typesError ) {
+    return <div>Error loading data. Please try again later.</div>;
+  }
 
   return (
     <div className='flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t'>
@@ -92,31 +60,35 @@ const Collection = () => {
         <div className={`border border-gray-300 pl-5 py-3 mt-6 ${showFilter ? '' : 'hidden'} sm:block`}>
           <p className='mb-3 text-sm font-medium'>CATEGORIES</p>
           <div className='flex flex-col gap-2 text-sm font-light text-gray-700'>
-            <p className='flex gap-2'>
-              <input className='w-3' type='checkbox' value={'Men'} onChange={toggleCategory} /> Men
-            </p>
-            <p className='flex gap-2'>
-              <input className='w-3' type='checkbox' value={'Women'} onChange={toggleCategory} /> Women
-            </p>
-            <p className='flex gap-2'>
-              <input className='w-3' type='checkbox' value={'Kids'} onChange={toggleCategory} /> Kids
-            </p>
+            {backendCategories.map((cat) => (
+              <p key={cat._id} className='flex gap-2'>
+                <input 
+                  className='w-3' 
+                  type='checkbox' 
+                  value={cat.name} 
+                  checked={categories.includes(cat.name)}
+                  onChange={() => dispatch(toggleCategory(cat.name))} 
+                /> {cat.name}
+              </p>
+            ))}
           </div>
         </div>
 
-        {/* SubCategory Filter */}
+        {/* Type Filter */}
         <div className={`border border-gray-300 pl-5 py-3 my-5 ${showFilter ? '' : 'hidden'} sm:block`}>
           <p className='mb-3 text-sm font-medium'>TYPE</p>
           <div className='flex flex-col gap-2 text-sm font-light text-gray-700'>
-            <p className='flex gap-2'>
-              <input className='w-3' type='checkbox' value={'Topwear'} onChange={toggleSubCategory} /> Topwear
-            </p>
-            <p className='flex gap-2'>
-              <input className='w-3' type='checkbox' value={'Bottomwear'} onChange={toggleSubCategory} /> Bottomwear
-            </p>
-            <p className='flex gap-2'>
-              <input className='w-3' type='checkbox' value={'Winterwear'} onChange={toggleSubCategory} /> Winterwear
-            </p>
+            {backendTypes.map((type) => (
+              <p key={type._id} className='flex gap-2'>
+                <input 
+                  className='w-3' 
+                  type='checkbox' 
+                  value={type.name} 
+                  checked={subCategories.includes(type.name)}
+                  onChange={() => dispatch(toggleSubCategory(type.name))} 
+                /> {type.name}
+              </p>
+            ))}
           </div>
         </div>
       </div>
@@ -124,10 +96,14 @@ const Collection = () => {
       {/* Right Side - Displaying Products */}
       <div className='flex-1'>
         <div className='flex justify-between text-base sm:text-2xl mb-4'>
-          <Title text1={'ALL'} text2={'COLLECTIONS'} /> {/* Title for collections */}
+          <Title text1={'ALL'} text2={'COLLECTIONS'} />
 
           {/* Product Sort Dropdown */}
-          <select onChange={(e) => setSortType(e.target.value)} className='border-2 border-gray-300 text-sm px-2'>
+          <select 
+            onChange={(e) => dispatch(setSortType(e.target.value))} 
+            value={sortType}
+            className='border-2 border-gray-300 text-sm px-2'
+          >
             <option value="relevant">Sort by: Relevant</option>
             <option value="low-high">Sort by: Low to High</option>
             <option value="high-low">Sort by: High to Low</option>
@@ -136,14 +112,19 @@ const Collection = () => {
 
         {/* Mapping Products */}
         <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6'>
-          {filterProducts.map((item, index) => (
-            <ProductItem key={index} name={item.name} id={item._id} price={item.price} image={item.image} /> 
+          {filteredProducts.map((item) => (
+            <ProductItem 
+              key={item._id} 
+              name={item.name} 
+              id={item._id} 
+              price={item.price} 
+              image={item.image} 
+            />
           ))}
-          
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Collection;

@@ -1,13 +1,46 @@
-import React, { useState } from "react";
+import  {  useState } from "react";
+import {  useNavigate } from "react-router-dom";
+import {useDispatch} from "react-redux"
+import { useLoginMutation, useRegisterMutation } from "../redux/api/userApiSlice";
+import {toast} from "react-toastify"
+import { setCredentials } from "../redux/features/auth/authSlice";
 
+//in the login the avatar part if i am logged in it will not direct me to the login page..but if not logged in then only.
 const Login = () => {
   // State to manage the current form (Login or Sign Up)
   const [currentState, setCurrentState] = useState("Login");
 
+  // State to manage the form data
+  const [username,setName]=useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+
+  const dispatch=useDispatch();
+  const navigate=useNavigate();
+
+  const [login]=useLoginMutation();
+  const [signUp]=useRegisterMutation();
+  
+
   // Handler for form submission
   const onSubmitHandler = async (event) => {
     event.preventDefault(); // Prevent default form submission behavior
-    // Add your authentication logic here
+    try {
+      if (currentState==="Login") {
+        const res=await login({email,password}).unwrap();
+        console.log(res)
+        dispatch(setCredentials({...res}))
+        toast.success("Logged in successfully! ");
+      } else {
+        const res=await signUp({username,email,password}).unwrap();//an userName must be there.
+        dispatch(setCredentials({...res}))
+        toast.success("Registered successfully! ");
+      }
+      navigate("/") // Redirect to the specified redirect URL after successful login
+    } catch (error) {
+      toast.error(error?.data?.message || error.error ||  "Operation failed");
+    }
   };
 
   return (
@@ -31,6 +64,8 @@ const Login = () => {
           type="text"
           className="w-full px-3 py-3 border border-gray-800 mb-4" // Input for name, shown only in Sign Up
           placeholder="Name"
+          value={username}
+          onChange={(event)=>setName(event.target.value)}
         />
       )}
 
@@ -39,6 +74,8 @@ const Login = () => {
         type="email"
         className="w-full px-3 py-3 border border-gray-800 mb-4" // Input for email
         placeholder="Email"
+        value={email}
+        onChange={(event)=>setEmail(event.target.value)}
       />
 
       {/* Input for password */}
@@ -46,6 +83,8 @@ const Login = () => {
         type="password"
         className="w-full px-3 py-3 border border-gray-800 mb-6" // Input for password with extra margin
         placeholder="Password"
+        value={password}
+        onChange={(event)=>setPassword(event.target.value)}
       />
 
       {/* Link for forgot password and switch between Login and Sign Up */}
